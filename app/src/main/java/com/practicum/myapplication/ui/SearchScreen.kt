@@ -1,4 +1,4 @@
-package com.practicum.myapplication
+package com.practicum.myapplication.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.practicum.myapplication.R
 
 @Composable
 fun SearchScreen() {
@@ -27,6 +28,7 @@ fun SearchScreen() {
             .background(Color(0xFF3772E7))
             .padding(16.dp)
         ) {
+
             Text(
                 text = stringResource(id = R.string.search),
                 color = Color.White,

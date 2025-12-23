@@ -1,4 +1,4 @@
-package com.practicum.myapplication
+package com.practicum.myapplication.ui
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

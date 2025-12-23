@@ -1,4 +1,4 @@
-package com.practicum.myapplication
+package com.practicum.myapplication.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.practicum.myapplication.R
 
 @Composable
 fun MainScreen(onSearchClick: () -> Unit, onSettingsClick: () -> Unit) {
