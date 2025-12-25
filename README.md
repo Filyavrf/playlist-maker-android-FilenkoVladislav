@@ -1,6 +1,13 @@
 # playlist-maker-android-FilenkoVladislav
 Учебный проект по созданию мобильного приложения
 
+### Технические требования
+Android Studio:Ladybug (2024.2.1) или новее.
+JDK:17 или 21
+Gradle:8.0+.
+Min SDK:29 (Android 10.0).
+Target SDK:34 (Android 14.0).
+
 В 3-ем спринте:
 - Создан главный экран приложения 
 - Реализована навигация между экранами через Intent
