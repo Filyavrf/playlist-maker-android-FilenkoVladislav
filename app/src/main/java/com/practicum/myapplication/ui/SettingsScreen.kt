@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import com.practicum.myapplication.R
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(onBackClick: () -> Boolean) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
