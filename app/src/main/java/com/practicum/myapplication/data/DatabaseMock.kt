@@ -16,16 +16,16 @@ class DatabaseMock(private val scope: CoroutineScope) {
         private val _historyUpdates = MutableSharedFlow<Unit>()
         private val playlists = mutableListOf<Playlist>()
         private val tracks = mutableListOf(
-            Track(1, "Владивосток 2000", "Мумий Троль", "02:38", 158000),
-            Track(2, "Группа крови", "Кино", "04:43", 283000),
-            Track(3, "Не смотри назад", "Ария", "05:12", 312000),
-            Track(4, "Звезда по имени Солнце", "Кино", "03:45", 225000),
-            Track(5, "Лондон", "Аквариум", "04:32", 272000),
-            Track(6, "На заре", "Альянс", "03:50", 230000),
-            Track(7, "Перемен", "Кино", "04:56", 296000),
-            Track(8, "Розовый фламинго", "Сплин", "03:15", 195000),
-            Track(9, "Танцевать", "Мельница", "03:42", 222000),
-            Track(10, "Чёрный бумер", "Серега", "04:01", 241000)
+            Track(1, "Владивосток 2000", "Мумий Троль", "02:38", 158000, "", false, 0),
+            Track(2, "Группа крови", "Кино", "04:43", 283000, "", false, 0),
+            Track(3, "Не смотри назад", "Ария", "05:12", 312000, "", false, 0),
+            Track(4, "Звезда по имени Солнце", "Кино", "03:45", 225000, "", false, 0),
+            Track(5, "Лондон", "Аквариум", "04:32", 272000, "", false, 0),
+            Track(6, "На заре", "Альянс", "03:50", 230000, "", false, 0),
+            Track(7, "Перемен", "Кино", "04:56", 296000, "", false, 0),
+            Track(8, "Розовый фламинго", "Сплин", "03:15", 195000, "", false, 0),
+            Track(9, "Танцевать", "Мельница", "03:42", 222000, "", false, 0),
+            Track(10, "Чёрный бумер", "Серега", "04:01", 241000, "", false, 0)
         )
     }
 
@@ -108,5 +108,14 @@ class DatabaseMock(private val scope: CoroutineScope) {
 
     fun searchTracks(expression: String): List<Track> {
         return tracks.filter { it.trackName.contains(expression, true) || it.artistName.contains(expression, true) }
+    }
+
+    fun addOrUpdateTrack(track: Track) {
+        val existingIndex = tracks.indexOfFirst { it.id == track.id }
+        if (existingIndex != -1) {
+            tracks[existingIndex] = track
+        } else {
+            tracks.add(track)
+        }
     }
 }
