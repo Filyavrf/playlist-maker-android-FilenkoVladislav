@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
@@ -33,7 +32,7 @@ import com.practicum.myapplication.ui.view_model.SearchViewModel
 fun SearchScreen(
     viewModel: SearchViewModel,
     onBackClick: () -> Unit,
-    onTrackClick: (Track) -> Unit
+    onTrackClick: (String) -> Unit
 ) {
     val screenState by viewModel.searchScreenState.collectAsState()
     var searchText by rememberSaveable { mutableStateOf("") }
@@ -56,7 +55,6 @@ fun SearchScreen(
             )
         }
 
-        // Поле поиска
         TextField(
             value = searchText,
             onValueChange = {
@@ -115,9 +113,13 @@ fun SearchScreen(
                 } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(state.foundList.size) { index ->
+                            val track = state.foundList[index]
                             TrackListItem(
-                                track = state.foundList[index],
-                                onClick = { onTrackClick(state.foundList[index]) }
+                                track = track,
+                                onClick = {
+                                    viewModel.saveTrack(track)
+                                    onTrackClick(track.id.toString())
+                                }
                             )
                         }
                     }

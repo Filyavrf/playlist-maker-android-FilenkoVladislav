@@ -34,8 +34,8 @@ fun PlaylistHost(navController: NavHostController) {
             SearchScreen(
                 viewModel = searchViewModel,
                 onBackClick = { navController.popBackStack() },
-                onTrackClick = { track ->
-                    navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
+                onTrackClick = { trackIdString ->
+                    navController.navigate("${AppScreen.TrackDetails.name}/$trackIdString")
                 }
             )
         }
@@ -59,8 +59,8 @@ fun PlaylistHost(navController: NavHostController) {
             FavoritesScreen(
                 viewModel = playlistsViewModel,
                 onBackClick = { navController.popBackStack() },
-                onTrackClick = { track ->
-                    navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
+                onTrackClick = { trackIdString ->
+                    navController.navigate("${AppScreen.TrackDetails.name}/$trackIdString")
                 }
             )
         }
@@ -68,7 +68,6 @@ fun PlaylistHost(navController: NavHostController) {
         composable(route = "${AppScreen.TrackDetails.name}/{trackId}") { backStackEntry ->
             val trackIdString = backStackEntry.arguments?.getString("trackId")
             val trackId = trackIdString?.toLongOrNull()
-
             if (trackId != null) {
                 TrackDetailsScreen(
                     trackId = trackId,

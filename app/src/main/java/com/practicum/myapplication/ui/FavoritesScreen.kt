@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,7 +22,7 @@ import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 fun FavoritesScreen(
     viewModel: PlaylistsViewModel,
     onBackClick: () -> Unit,
-    onTrackClick: (Track) -> Unit
+    onTrackClick: (String) -> Unit
 ) {
     val favorites by viewModel.favoriteList.collectAsState(emptyList())
 
@@ -32,7 +32,7 @@ fun FavoritesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.Black)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
             }
             Text("Избранные треки", fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
         }
@@ -44,7 +44,14 @@ fun FavoritesScreen(
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(favorites.size) { index ->
-                    TrackListItem(track = favorites[index], onClick = { onTrackClick(favorites[index]) })
+                    val track = favorites[index]
+                    TrackListItem(
+                        track = track,
+                        onClick = {
+                            viewModel.saveTrack(track)
+                            onTrackClick(track.id.toString())
+                        }
+                    )
                 }
             }
         }

@@ -42,4 +42,10 @@ class PlaylistsViewModel : ViewModel() {
     fun getTrackById(id: Long): Track? {
         return tracksRepository.getTrackById(id)
     }
+
+    fun saveTrack(track: Track) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tracksRepository.saveTrack(track)
+        }
+    }
 }

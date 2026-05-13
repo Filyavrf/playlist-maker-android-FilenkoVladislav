@@ -53,4 +53,8 @@ class TracksRepositoryImpl(
     }
     override fun deleteTracksByPlaylistId(playlistId: Long) = database.deleteTracksByPlaylistId(playlistId)
     override fun getTrackById(id: Long): Track? = database.getTrackById(id)
+
+    override suspend fun saveTrack(track: Track) {
+        database.addOrUpdateTrack(track)
+    }
 }

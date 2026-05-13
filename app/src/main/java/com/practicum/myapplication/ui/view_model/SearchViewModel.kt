@@ -15,7 +15,7 @@ sealed class SearchState {
     object Initial : SearchState()
     object Searching : SearchState()
     data class Success(val foundList: List<Track>) : SearchState()
-    object Error : SearchState() // ошибка сервера
+    object Error : SearchState()
 }
 
 class SearchViewModel(
@@ -52,6 +52,12 @@ class SearchViewModel(
     fun retryLastSearch() {
         if (lastQuery.isNotEmpty()) {
             search(lastQuery)
+        }
+    }
+
+    fun saveTrack(track: Track) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tracksRepository.saveTrack(track)
         }
     }
 
