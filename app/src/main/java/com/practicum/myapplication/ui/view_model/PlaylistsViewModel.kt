@@ -2,9 +2,9 @@ package com.practicum.myapplication.ui.view_model
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.practicum.myapplication.creator.Creator
 import com.practicum.myapplication.data.DatabaseMock
 import com.practicum.myapplication.data.repository.PlaylistsRepositoryImpl
-import com.practicum.myapplication.data.repository.TracksRepositoryImpl
 import com.practicum.myapplication.domain.PlaylistsRepository
 import com.practicum.myapplication.domain.TracksRepository
 import com.practicum.myapplication.domain.models.Playlist
@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class PlaylistsViewModel : ViewModel() {
     private val playlistsRepository: PlaylistsRepository = PlaylistsRepositoryImpl(scope = viewModelScope)
-    private val tracksRepository: TracksRepository = TracksRepositoryImpl(scope = viewModelScope)
+    private val tracksRepository: TracksRepository = Creator.provideTracksRepository()
     private val databaseRepository: DatabaseMock = DatabaseMock(scope = viewModelScope)
 
     val playlists: Flow<List<Playlist>> = playlistsRepository.getAllPlaylists()

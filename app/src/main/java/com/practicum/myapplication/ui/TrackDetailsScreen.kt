@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
@@ -51,7 +52,7 @@ fun TrackDetailsScreen(
                 onClick = onBackClick,
                 modifier = Modifier.padding(top = 16.dp, start = 4.dp)
             ) {
-                Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Назад")
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
             }
         }
     ) { paddingValues ->
