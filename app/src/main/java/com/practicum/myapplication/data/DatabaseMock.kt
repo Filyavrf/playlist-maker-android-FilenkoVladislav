@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
 class DatabaseMock(private val scope: CoroutineScope) {
-    // companion object делает эти списки общими для всего приложения,
-    // данные не будут стираться при переходах!
     companion object {
         private val historyList = mutableListOf<String>()
         private val _historyUpdates = MutableSharedFlow<Unit>()
@@ -75,7 +73,6 @@ class DatabaseMock(private val scope: CoroutineScope) {
     }
 
     fun deleteTrackFromPlaylist(trackId: Long) {
-        // Чтобы удалить из плейлиста, просто обнуляем playlistId
         val index = tracks.indexOfFirst { it.id == trackId }
         if (index != -1) {
             tracks[index] = tracks[index].copy(playlistId = 0)
@@ -86,7 +83,6 @@ class DatabaseMock(private val scope: CoroutineScope) {
         emit(tracks.find { it.trackName == track.trackName && it.artistName == track.artistName })
     }
 
-    // Вспомогательная функция для безопасного получения трека по ID
     fun getTrackById(id: Long): Track? {
         return tracks.find { it.id == id }
     }

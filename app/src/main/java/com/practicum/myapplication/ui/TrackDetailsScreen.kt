@@ -33,10 +33,8 @@ fun TrackDetailsScreen(
     viewModel: PlaylistsViewModel,
     onBackClick: () -> Unit
 ) {
-    // Получаем трек из View Model
     val track = remember(trackId) { viewModel.getTrackById(trackId) }
 
-    // Локальное состояние для мгновенной реакции UI (сердечко)
     var isFavorite by remember(track) { mutableStateOf(track?.favorite ?: false) }
 
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -50,7 +48,7 @@ fun TrackDetailsScreen(
     Scaffold(
         topBar = {
             IconButton(
-                onClick = onBackClick, // Убери фигурные скобки вокруг onBackClick
+                onClick = onBackClick,
                 modifier = Modifier.padding(top = 16.dp, start = 4.dp)
             ) {
                 Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Назад")
@@ -75,12 +73,10 @@ fun TrackDetailsScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                // Добавить в плейлист
                 IconButton(onClick = { showBottomSheet = true }, modifier = Modifier.size(50.dp).background(Color(0xFFE6E6E6), CircleShape)) {
                     Icon(Icons.Default.Add, contentDescription = "В плейлист", tint = Color.Gray)
                 }
 
-                // Избранное
                 IconButton(
                     onClick = {
                         isFavorite = !isFavorite
@@ -104,7 +100,6 @@ fun TrackDetailsScreen(
             }
         }
 
-        // Шторка с плейлистами
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },

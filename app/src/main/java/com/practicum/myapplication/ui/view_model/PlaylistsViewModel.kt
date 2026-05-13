@@ -39,7 +39,6 @@ class PlaylistsViewModel : ViewModel() {
         }
     }
 
-    // Получение трека по ID для безопасной навигации
     fun getTrackById(id: Long): Track? {
         return tracksRepository.getTrackById(id)
     }

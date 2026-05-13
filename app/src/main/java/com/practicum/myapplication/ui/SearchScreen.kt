@@ -37,7 +37,6 @@ fun SearchScreen(
     var searchText by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        // Заголовок и кнопка "Назад"
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,7 +62,6 @@ fun SearchScreen(
             value = searchText,
             onValueChange = {
                 searchText = it
-                // ИСПРАВЛЕНИЕ: Теперь поиск запускается сразу при вводе текста
                 viewModel.search(it)
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -73,7 +71,7 @@ fun SearchScreen(
                 if (searchText.isNotEmpty()) {
                     IconButton(onClick = {
                         searchText = ""
-                        viewModel.search("") // Очищаем результаты при нажатии на крестик
+                        viewModel.search("")
                     }) {
                         Icon(Icons.Default.Clear, contentDescription = "Clear")
                     }
