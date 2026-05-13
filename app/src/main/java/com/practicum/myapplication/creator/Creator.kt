@@ -7,7 +7,6 @@ import kotlinx.coroutines.GlobalScope // Нужно импортировать
 object Creator {
 
     fun provideTracksRepository(): TracksRepository {
-        // Добавляем GlobalScope в качестве параметра
         return TracksRepositoryImpl(scope = GlobalScope)
     }
 }

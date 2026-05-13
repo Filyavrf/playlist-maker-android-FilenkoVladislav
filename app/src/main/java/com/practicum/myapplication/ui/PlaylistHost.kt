@@ -8,7 +8,6 @@ import androidx.navigation.compose.composable
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 import com.practicum.myapplication.ui.view_model.SearchViewModel
 
-// ИСПРАВЛЕНИЕ: Добавили все нужные экраны в перечисление
 enum class AppScreen {
     Main, Search, Playlists, Favorites, Settings, NewPlaylist, TrackDetails
 }
@@ -34,10 +33,8 @@ fun PlaylistHost(navController: NavHostController) {
             val searchViewModel: SearchViewModel = viewModel(factory = SearchViewModel.getViewModelFactory())
             SearchScreen(
                 viewModel = searchViewModel,
-                // ИСПРАВЛЕНИЕ: Гарантированный возврат назад
                 onBackClick = { navController.popBackStack() },
                 onTrackClick = { track ->
-                    // Переход на экран деталей с передачей ID трека
                     navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
                 }
             )
@@ -68,7 +65,6 @@ fun PlaylistHost(navController: NavHostController) {
             )
         }
 
-        // ИСПРАВЛЕНИЕ: Обработка маршрута с параметром trackId
         composable(route = "${AppScreen.TrackDetails.name}/{trackId}") { backStackEntry ->
             val trackIdString = backStackEntry.arguments?.getString("trackId")
             val trackId = trackIdString?.toLongOrNull()
@@ -80,7 +76,7 @@ fun PlaylistHost(navController: NavHostController) {
                     onBackClick = { navController.popBackStack() }
                 )
             } else {
-                navController.popBackStack() // Защита от краша, если ID не найден
+                navController.popBackStack()
             }
         }
 

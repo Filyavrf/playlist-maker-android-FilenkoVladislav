@@ -35,13 +35,10 @@ class SearchViewModel(
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                // 1. Включаем лоадер
                 _searchScreenState.update { SearchState.Searching }
 
-                // 2. Делаем ту самую искусственную задержку в 1 секунду
                 delay(1000L)
 
-                // 3. Ищем треки
                 val list = tracksRepository.searchTracks(expression = whatSearch)
 
                 if (list.isEmpty()) {
@@ -60,8 +57,6 @@ class SearchViewModel(
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    // Используем локальный мок-репозиторий
-                    // Имитируем передачу скоупа, так как мы создали общий DatabaseMock, это сработает
                     val dummyScope = kotlinx.coroutines.GlobalScope
                     return SearchViewModel(TracksRepositoryImpl(dummyScope)) as T
                 }
