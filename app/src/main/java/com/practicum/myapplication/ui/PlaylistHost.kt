@@ -1,22 +1,22 @@
 package com.practicum.myapplication.ui
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 import com.practicum.myapplication.ui.view_model.SearchViewModel
 
+// ИСПРАВЛЕНИЕ: Добавили все нужные экраны в перечисление
 enum class AppScreen {
-    Main,
-    Search,
-    Playlists,
-    Favorites,
-    Settings
+    Main, Search, Playlists, Favorites, Settings, NewPlaylist, TrackDetails
 }
 
 @Composable
 fun PlaylistHost(navController: NavHostController) {
+    val playlistsViewModel: PlaylistsViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = AppScreen.Main.name
@@ -31,31 +31,61 @@ fun PlaylistHost(navController: NavHostController) {
         }
 
         composable(route = AppScreen.Search.name) {
-            val viewModel: SearchViewModel = viewModel(
-                factory = SearchViewModel.getViewModelFactory()
-            )
+            val searchViewModel: SearchViewModel = viewModel(factory = SearchViewModel.getViewModelFactory())
             SearchScreen(
-                viewModel = viewModel,
-                onBackClick = { navController.popBackStack() }
+                viewModel = searchViewModel,
+                // ИСПРАВЛЕНИЕ: Гарантированный возврат назад
+                onBackClick = { navController.popBackStack() },
+                onTrackClick = { track ->
+                    // Переход на экран деталей с передачей ID трека
+                    navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
+                }
             )
         }
 
         composable(route = AppScreen.Playlists.name) {
             PlaylistsScreen(
+                playlistsViewModel = playlistsViewModel,
+                onBackClick = { navController.popBackStack() },
+                onAddNewPlaylistClick = { navController.navigate(AppScreen.NewPlaylist.name) }
+            )
+        }
+
+        composable(route = AppScreen.NewPlaylist.name) {
+            NewPlaylistScreen(
+                viewModel = playlistsViewModel,
                 onBackClick = { navController.popBackStack() }
             )
         }
 
         composable(route = AppScreen.Favorites.name) {
             FavoritesScreen(
-                onBackClick = { navController.popBackStack() }
+                viewModel = playlistsViewModel,
+                onBackClick = { navController.popBackStack() },
+                onTrackClick = { track ->
+                    navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
+                }
             )
         }
 
+        // ИСПРАВЛЕНИЕ: Обработка маршрута с параметром trackId
+        composable(route = "${AppScreen.TrackDetails.name}/{trackId}") { backStackEntry ->
+            val trackIdString = backStackEntry.arguments?.getString("trackId")
+            val trackId = trackIdString?.toLongOrNull()
+
+            if (trackId != null) {
+                TrackDetailsScreen(
+                    trackId = trackId,
+                    viewModel = playlistsViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            } else {
+                navController.popBackStack() // Защита от краша, если ID не найден
+            }
+        }
+
         composable(route = AppScreen.Settings.name) {
-            SettingsScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            SettingsScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

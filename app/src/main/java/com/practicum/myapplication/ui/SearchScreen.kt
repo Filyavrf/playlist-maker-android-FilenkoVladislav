@@ -23,24 +23,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.practicum.myapplication.R
-import com.practicum.myapplication.data.network.Track
+import com.practicum.myapplication.domain.models.Track
 import com.practicum.myapplication.ui.view_model.SearchState
 import com.practicum.myapplication.ui.view_model.SearchViewModel
 
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onTrackClick: (Track) -> Unit
 ) {
     val screenState by viewModel.searchScreenState.collectAsState()
     var searchText by rememberSaveable { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // Заголовок экрана
+    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+        // Заголовок и кнопка "Назад"
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -48,7 +45,11 @@ fun SearchScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Назад",
+                    tint = Color.Black
+                )
             }
             Text(
                 text = stringResource(id = R.string.search),
@@ -58,26 +59,22 @@ fun SearchScreen(
             )
         }
 
-        // Поле ввода
         TextField(
             value = searchText,
             onValueChange = {
                 searchText = it
+                // ИСПРАВЛЕНИЕ: Теперь поиск запускается сразу при вводе текста
+                viewModel.search(it)
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
             placeholder = { Text("Поиск", color = Color.Gray) },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    modifier = Modifier.clickable { viewModel.search(searchText) }
-                )
-            },
+            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "Search") },
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
-                    IconButton(onClick = { searchText = "" }) {
+                    IconButton(onClick = {
+                        searchText = ""
+                        viewModel.search("") // Очищаем результаты при нажатии на крестик
+                    }) {
                         Icon(Icons.Default.Clear, contentDescription = "Clear")
                     }
                 }
@@ -95,91 +92,42 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Обработка состояний поиска
         when (val state = screenState) {
-            is SearchState.Initial -> {
-                // Пустой экран
-            }
-
-            is SearchState.Searching -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.Blue)
-                }
-            }
-
+            is SearchState.Initial -> {}
+            is SearchState.Searching -> { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = Color.Blue) } }
             is SearchState.Success -> {
                 if (state.foundList.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Ничего не найдено", color = Color.Black)
-                    }
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Ничего не найдено", color = Color.Black) }
                 } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(state.foundList.size) { index ->
-                            TrackListItem(track = state.foundList[index])
+                            TrackListItem(
+                                track = state.foundList[index],
+                                onClick = { onTrackClick(state.foundList[index]) }
+                            )
                         }
                     }
                 }
             }
-
-            is SearchState.Fail -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Ошибка: ${state.error}", color = Color.Red)
-                }
-            }
+            is SearchState.Fail -> { Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Ошибка: ${state.error}", color = Color.Red) } }
         }
     }
 }
 
 @Composable
-fun TrackListItem(track: Track) {
+fun TrackListItem(track: Track, onClick: () -> Unit) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp, horizontal = 16.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp, horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_music),
-            contentDescription = "Track Album Cover",
-            modifier = Modifier.size(45.dp)
-        )
-
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 12.dp, end = 8.dp),
-            verticalArrangement = Arrangement.Center // Исправлено здесь
-        ) {
-            Text(
-                text = track.trackName,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        Image(painter = painterResource(id = R.drawable.ic_music), contentDescription = "Cover", modifier = Modifier.size(45.dp))
+        Column(modifier = Modifier.weight(1f).padding(start = 12.dp, end = 8.dp), verticalArrangement = Arrangement.Center) {
+            Text(text = track.trackName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = track.artistName,
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                Text(
-                    text = " • ${track.trackTime}",
-                    fontSize = 11.sp,
-                    color = Color.Gray
-                )
+                Text(text = track.artistName, fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text(text = " • ${track.trackTime}", fontSize = 11.sp, color = Color.Gray)
             }
         }
-
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = "Go to details",
-            tint = Color.LightGray,
-            modifier = Modifier.size(24.dp)
-        )
+        Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = "Go", tint = Color.LightGray, modifier = Modifier.size(24.dp))
     }
 }
