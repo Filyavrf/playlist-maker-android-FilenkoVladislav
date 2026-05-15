@@ -35,92 +35,63 @@ fun TrackDetailsScreen(
     viewModel: PlaylistsViewModel,
     onBackClick: () -> Unit
 ) {
-    val track = remember(trackId) { viewModel.getTrackById(trackId) }
+    var track by remember { mutableStateOf<Track?>(null) }
+    var isFavorite by remember { mutableStateOf(false) }
 
-    var isFavorite by remember(track) { mutableStateOf(track?.favorite ?: false) }
+    LaunchedEffect(trackId) {
+        val loadedTrack = viewModel.getTrackByIdAsync(trackId)
+        track = loadedTrack
+        isFavorite = loadedTrack?.favorite ?: false
+    }
+
     var showBottomSheet by remember { mutableStateOf(false) }
     val playlists by viewModel.playlists.collectAsState(emptyList())
 
-    if (track == null) {
+    val currentTrack = track
+    if (currentTrack == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Трек не найден")
+            CircularProgressIndicator()
         }
         return
     }
 
     Scaffold(
         topBar = {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.padding(top = 16.dp, start = 4.dp)
-            ) {
+            IconButton(onClick = onBackClick, modifier = Modifier.padding(top = 16.dp, start = 4.dp)) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
             }
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp),
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val painter = rememberAsyncImagePainter(
-                model = track.artworkUrl100.ifEmpty { null },
+                model = currentTrack.artworkUrl100.ifEmpty { null },
                 placeholder = painterResource(id = R.drawable.ic_music),
                 error = painterResource(id = R.drawable.ic_music)
             )
             Image(
                 painter = painter,
                 contentDescription = "Cover",
-                modifier = Modifier
-                    .padding(top = 24.dp)
-                    .size(200.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.LightGray),
+                modifier = Modifier.padding(top = 24.dp).size(200.dp).clip(RoundedCornerShape(8.dp)).background(Color.LightGray),
                 contentScale = ContentScale.Crop
             )
-
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = track.trackName,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            Text(
-                text = track.artistName,
-                fontSize = 16.sp,
-                color = Color.Gray,
-                modifier = Modifier.align(Alignment.Start)
-            )
-
+            Text(text = currentTrack.trackName, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black, modifier = Modifier.align(Alignment.Start))
+            Text(text = currentTrack.artistName, fontSize = 16.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Start))
             Spacer(modifier = Modifier.height(32.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { showBottomSheet = true },
-                    modifier = Modifier
-                        .size(50.dp)
-                        .background(Color(0xFFE6E6E6), CircleShape)
-                ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { showBottomSheet = true }, modifier = Modifier.size(50.dp).background(Color(0xFFE6E6E6), CircleShape)) {
                     Icon(Icons.Default.Add, contentDescription = "В плейлист", tint = Color.Gray)
                 }
-
                 IconButton(
                     onClick = {
                         isFavorite = !isFavorite
-                        viewModel.toggleFavorite(track, isFavorite)
+                        viewModel.toggleFavorite(currentTrack, isFavorite)
                     },
-                    modifier = Modifier
-                        .size(50.dp)
-                        .background(Color(0xFFE6E6E6), CircleShape)
+                    modifier = Modifier.size(50.dp).background(Color(0xFFE6E6E6), CircleShape)
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -131,37 +102,18 @@ fun TrackDetailsScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Длительность", color = Color.Gray, fontSize = 14.sp)
-                Text(track.trackTime, color = Color.Black, fontSize = 14.sp)
+                Text(currentTrack.trackTime, color = Color.Black, fontSize = 14.sp)
             }
         }
 
         if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                containerColor = Color.White
-            ) {
+            ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, containerColor = Color.White) {
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
-                    Text(
-                        "Добавить в плейлист",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        textAlign = TextAlign.Center
-                    )
-
+                    Text("Добавить в плейлист", fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
                     if (playlists.isEmpty()) {
-                        Text(
-                            "Нет плейлистов",
-                            modifier = Modifier.fillMaxWidth().padding(16.dp),
-                            textAlign = TextAlign.Center,
-                            color = Color.Gray
-                        )
+                        Text("Нет плейлистов", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center, color = Color.Gray)
                     } else {
                         LazyColumn {
                             items(playlists.size) { index ->
@@ -169,7 +121,7 @@ fun TrackDetailsScreen(
                                 PlaylistListItem(
                                     playlist = playlist,
                                     onClick = {
-                                        viewModel.insertTrackToPlaylist(track, playlist.id)
+                                        viewModel.insertTrackToPlaylist(currentTrack, playlist.id)
                                         showBottomSheet = false
                                     }
                                 )

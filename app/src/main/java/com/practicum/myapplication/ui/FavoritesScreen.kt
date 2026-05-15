@@ -15,7 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.practicum.myapplication.domain.models.Track
+import com.practicum.myapplication.ui.screens.TrackItem
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 
 @Composable
@@ -27,13 +27,8 @@ fun FavoritesScreen(
     val favorites by viewModel.favoriteList.collectAsState(emptyList())
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 4.dp, end = 16.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
-            }
+        Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp, start = 4.dp, end = 16.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black) }
             Text("Избранные треки", fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
         }
 
@@ -45,7 +40,7 @@ fun FavoritesScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(favorites.size) { index ->
                     val track = favorites[index]
-                    TrackListItem(
+                    TrackItem(
                         track = track,
                         onClick = {
                             viewModel.saveTrack(track)

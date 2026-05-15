@@ -1,28 +1,34 @@
-package com.practicum.myapplication.ui
+package com.practicum.myapplication.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.practicum.myapplication.R
 import com.practicum.myapplication.domain.models.Track
 import com.practicum.myapplication.ui.view_model.SearchState
@@ -30,119 +36,95 @@ import com.practicum.myapplication.ui.view_model.SearchViewModel
 
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel,
+    onTrackClick: (Track) -> Unit,
     onBackClick: () -> Unit,
-    onTrackClick: (String) -> Unit
+    viewModel: SearchViewModel = viewModel(factory = SearchViewModel.getViewModelFactory())
 ) {
-    val screenState by viewModel.searchScreenState.collectAsState()
-    var searchText by rememberSaveable { mutableStateOf("") }
+    val state by viewModel.searchScreenState.collectAsStateWithLifecycle()
+    var searchText by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp, start = 4.dp, end = 16.dp, bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+    Column(
+        modifier = Modifier.fillMaxSize().systemBarsPadding()
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
+                Icon(Icons.Default.Clear, contentDescription = "Назад")
             }
-            Text(
-                text = stringResource(id = R.string.search),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Black
-            )
+            Text("Поиск", fontSize = 22.sp, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
         }
 
-        TextField(
+        OutlinedTextField(
             value = searchText,
-            onValueChange = {
-                searchText = it
-                viewModel.search(it)
-            },
+            onValueChange = { searchText = it },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Поиск", color = Color.Gray) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+            placeholder = { Text("Поиск") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
                     IconButton(onClick = {
                         searchText = ""
                         viewModel.search("")
+                        keyboardController?.hide()
                     }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Clear")
+                        Icon(Icons.Default.Clear, contentDescription = "Очистить")
                     }
                 }
             },
             singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFFE6E6E6),
-                unfocusedContainerColor = Color(0xFFE6E6E6),
-                disabledContainerColor = Color(0xFFE6E6E6),
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = Color.LightGray.copy(alpha = 0.2f),
+                unfocusedContainerColor = Color.LightGray.copy(alpha = 0.2f),
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent
             ),
-            shape = MaterialTheme.shapes.medium
+            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                onSearch = {
+                    if (searchText.isNotEmpty()) {
+                        viewModel.search(searchText)
+                        keyboardController?.hide()
+                    }
+                }
+            )
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        when (val state = screenState) {
-            is SearchState.Initial -> {}
-            is SearchState.Searching -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.Blue)
+        Box(modifier = Modifier.fillMaxSize()) {
+            when (val currentState = state) {
+                is SearchState.Initial -> {
+                    HistorySection(
+                        history = currentState.history,
+                        onHistoryItemClick = { query ->
+                            searchText = query
+                            viewModel.search(query)
+                            keyboardController?.hide()
+                        },
+                        onClearHistory = { viewModel.clearHistory() }
+                    )
                 }
-            }
-            is SearchState.Success -> {
-                if (state.foundList.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_placeholder_no_results),
-                                contentDescription = null,
-                                modifier = Modifier.size(120.dp)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("Ничего не найдено", color = Color.Black, fontSize = 18.sp)
-                        }
-                    }
-                } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(state.foundList.size) { index ->
-                            val track = state.foundList[index]
-                            TrackListItem(
-                                track = track,
-                                onClick = {
-                                    viewModel.saveTrack(track)
-                                    onTrackClick(track.id.toString())
-                                }
-                            )
-                        }
-                    }
+                is SearchState.Searching -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.primary)
                 }
-            }
-            is SearchState.Error -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_placeholder_error),
-                            contentDescription = null,
-                            modifier = Modifier.size(120.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Ошибка сервера", color = Color.Black, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.retryLastSearch() }) {
-                            Text("Обновить")
+                is SearchState.Success -> {
+                    TrackList(
+                        tracks = currentState.foundList,
+                        onTrackClick = { track ->
+                            viewModel.saveTrack(track)
+                            onTrackClick(track)
                         }
-                    }
+                    )
+                }
+                is SearchState.Empty -> {
+                    Placeholder(icon = Icons.Default.Info, text = "Ничего не найдено")
+                }
+                is SearchState.Error -> {
+                    Placeholder(
+                        icon = Icons.Default.Warning,
+                        text = "Проблемы со связью\n\nЗагрузка не удалась. Проверьте подключение к интернету",
+                        showRetry = true,
+                        onRetry = { viewModel.retryLastSearch() }
+                    )
                 }
             }
         }
@@ -150,59 +132,68 @@ fun SearchScreen(
 }
 
 @Composable
-fun TrackListItem(track: Track, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        val painter = rememberAsyncImagePainter(
-            model = track.artworkUrl100.ifEmpty { null },
-            placeholder = painterResource(id = R.drawable.ic_music),
-            error = painterResource(id = R.drawable.ic_music)
-        )
-        Image(
-            painter = painter,
-            contentDescription = "Cover",
-            modifier = Modifier.size(45.dp)
-        )
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 12.dp, end = 8.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = track.trackName,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = track.artistName,
-                    fontSize = 11.sp,
-                    color = Color.Gray,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-                Text(
-                    text = " • ${track.trackTime}",
-                    fontSize = 11.sp,
-                    color = Color.Gray
-                )
+fun HistorySection(history: List<String>, onHistoryItemClick: (String) -> Unit, onClearHistory: () -> Unit) {
+    if (history.isEmpty()) return
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text("Вы искали", modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium, color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(history) { query ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().clickable { onHistoryItemClick(query) }.padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(text = query, fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
             }
         }
-        Icon(
-            imageVector = Icons.Default.KeyboardArrowRight,
-            contentDescription = "Go",
-            tint = Color.LightGray,
-            modifier = Modifier.size(24.dp)
+        Button(onClick = onClearHistory, modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) { Text("Очистить историю") }
+    }
+}
+
+@Composable
+fun TrackList(tracks: List<Track>, onTrackClick: (Track) -> Unit) {
+    LazyColumn {
+        items(tracks) { track -> TrackItem(track = track, onClick = { onTrackClick(track) }) }
+    }
+}
+
+@Composable
+fun TrackItem(track: Track, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = track.artworkUrl100,
+            contentDescription = null,
+            placeholder = painterResource(R.drawable.ic_music),
+            error = painterResource(R.drawable.ic_music),
+            modifier = Modifier.size(45.dp).clip(RoundedCornerShape(2.dp)),
+            contentScale = ContentScale.Crop
         )
+        Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
+            Text(text = track.trackName, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = track.artistName, fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                Text(text = " • ", fontSize = 11.sp, color = Color.Gray)
+                Text(text = track.trackTime, fontSize = 11.sp, color = Color.Gray)
+            }
+        }
+        Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
+    }
+}
+
+@Composable
+fun Placeholder(icon: ImageVector, text: String, showRetry: Boolean = false, onRetry: () -> Unit = {}) {
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(120.dp), tint = Color.LightGray)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = text, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+        if (showRetry) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onRetry) { Text("Обновить") }
+        }
     }
 }

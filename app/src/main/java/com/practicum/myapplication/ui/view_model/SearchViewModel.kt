@@ -12,9 +12,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 sealed class SearchState {
-    object Initial : SearchState()
+    data class Initial(val history: List<String>) : SearchState()
     object Searching : SearchState()
     data class Success(val foundList: List<Track>) : SearchState()
+    object Empty : SearchState()
     object Error : SearchState()
 }
 
@@ -22,16 +23,31 @@ class SearchViewModel(
     private val tracksRepository: com.practicum.myapplication.domain.TracksRepository
 ) : ViewModel() {
 
-    private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
+    private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial(emptyList()))
     val searchScreenState = _searchScreenState.asStateFlow()
 
     private var lastQuery: String = ""
 
+    init {
+        loadHistory()
+    }
+
+    private fun loadHistory() {
+        viewModelScope.launch {
+            val history = Creator.searchHistoryPreferences.getEntries()
+            _searchScreenState.value = SearchState.Initial(history)
+        }
+    }
+
     fun search(whatSearch: String) {
-        lastQuery = whatSearch
         if (whatSearch.isEmpty()) {
-            _searchScreenState.value = SearchState.Initial
+            loadHistory()
             return
+        }
+        lastQuery = whatSearch
+        viewModelScope.launch(Dispatchers.IO) {
+            Creator.searchHistoryPreferences.addEntry(whatSearch)
+            loadHistory()
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -39,7 +55,7 @@ class SearchViewModel(
             try {
                 val list = tracksRepository.searchTracks(expression = whatSearch)
                 if (list.isEmpty()) {
-                    _searchScreenState.update { SearchState.Success(emptyList()) }
+                    _searchScreenState.update { SearchState.Empty }
                 } else {
                     _searchScreenState.update { SearchState.Success(list) }
                 }
@@ -58,6 +74,13 @@ class SearchViewModel(
     fun saveTrack(track: Track) {
         viewModelScope.launch(Dispatchers.IO) {
             tracksRepository.saveTrack(track)
+        }
+    }
+
+    fun clearHistory() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Creator.searchHistoryPreferences.clearHistory()
+            loadHistory()
         }
     }
 

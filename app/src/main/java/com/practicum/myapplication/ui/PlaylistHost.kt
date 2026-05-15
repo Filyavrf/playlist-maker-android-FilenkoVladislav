@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 import com.practicum.myapplication.ui.view_model.SearchViewModel
+import com.practicum.myapplication.ui.screens.SearchScreen
 
 enum class AppScreen {
     Main, Search, Playlists, Favorites, Settings, NewPlaylist, TrackDetails
@@ -34,8 +35,8 @@ fun PlaylistHost(navController: NavHostController) {
             SearchScreen(
                 viewModel = searchViewModel,
                 onBackClick = { navController.popBackStack() },
-                onTrackClick = { trackIdString ->
-                    navController.navigate("${AppScreen.TrackDetails.name}/$trackIdString")
+                onTrackClick = { track ->
+                    navController.navigate("${AppScreen.TrackDetails.name}/${track.id}")
                 }
             )
         }
@@ -59,8 +60,8 @@ fun PlaylistHost(navController: NavHostController) {
             FavoritesScreen(
                 viewModel = playlistsViewModel,
                 onBackClick = { navController.popBackStack() },
-                onTrackClick = { trackIdString ->
-                    navController.navigate("${AppScreen.TrackDetails.name}/$trackIdString")
+                onTrackClick = { trackId ->
+                    navController.navigate("${AppScreen.TrackDetails.name}/$trackId")
                 }
             )
         }
