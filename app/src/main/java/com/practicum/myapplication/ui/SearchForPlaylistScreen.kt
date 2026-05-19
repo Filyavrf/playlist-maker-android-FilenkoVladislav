@@ -17,10 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,9 +46,9 @@ fun SearchForPlaylistScreen(
     Column(modifier = Modifier.fillMaxSize().systemBarsPadding()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.Clear, contentDescription = "Назад")
+                Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.back))
             }
-            Text("Добавить треки", fontSize = 22.sp, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.add_tracks), fontSize = 22.sp, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
         }
         OutlinedTextField(
             value = searchText,
@@ -56,7 +57,7 @@ fun SearchForPlaylistScreen(
                 viewModel.search(it, saveToHistory = false)
             },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Поиск") },
+            placeholder = { Text(stringResource(R.string.search)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
@@ -65,7 +66,7 @@ fun SearchForPlaylistScreen(
                         viewModel.search("", saveToHistory = false)
                         keyboardController?.hide()
                     }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Очистить")
+                        Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_history))
                     }
                 }
             },
@@ -76,15 +77,6 @@ fun SearchForPlaylistScreen(
                 unfocusedContainerColor = Color.LightGray.copy(alpha = 0.2f),
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent
-            ),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
-                onSearch = {
-                    if (searchText.isNotEmpty()) {
-                        viewModel.search(searchText, saveToHistory = false)
-                        keyboardController?.hide()
-                    }
-                }
             )
         )
         Box(modifier = Modifier.fillMaxSize()) {
@@ -107,12 +99,12 @@ fun SearchForPlaylistScreen(
                     }
                 }
                 is SearchState.Empty -> {
-                    Placeholder(icon = Icons.Default.Info, text = "Ничего не найдено")
+                    EmptyPlaceholder(icon = Icons.Default.Info, text = stringResource(R.string.nothing_found))
                 }
                 is SearchState.Error -> {
-                    Placeholder(
+                    ErrorPlaceholder(
                         icon = Icons.Default.Warning,
-                        text = "Проблемы со связью\n\nЗагрузка не удалась. Проверьте подключение к интернету",
+                        text = stringResource(R.string.connection_error),
                         showRetry = true,
                         onRetry = { viewModel.retryLastSearch() }
                     )
@@ -140,7 +132,7 @@ fun TrackItemForAdding(track: Track, onClick: () -> Unit) {
             Text(text = track.trackName, fontSize = 16.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = track.artistName, fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(text = " • ${track.trackTime}", fontSize = 11.sp, color = Color.Gray)
+                Text(text = " • ${track.formattedDuration}", fontSize = 11.sp, color = Color.Gray)
             }
         }
         Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
@@ -148,14 +140,23 @@ fun TrackItemForAdding(track: Track, onClick: () -> Unit) {
 }
 
 @Composable
-fun Placeholder(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, showRetry: Boolean = false, onRetry: () -> Unit = {}) {
+private fun EmptyPlaceholder(icon: ImageVector, text: String) {
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(120.dp), tint = Color.LightGray)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = text, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
+private fun ErrorPlaceholder(icon: ImageVector, text: String, showRetry: Boolean = false, onRetry: () -> Unit = {}) {
     Column(modifier = Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(120.dp), tint = Color.LightGray)
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = text, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
         if (showRetry) {
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onRetry) { Text("Обновить") }
+            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
         }
     }
 }

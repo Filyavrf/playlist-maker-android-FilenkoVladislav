@@ -16,11 +16,15 @@ class PlaylistsViewModel : ViewModel() {
     private val playlistsRepository = Creator.providePlaylistsRepository()
     private val tracksRepository = Creator.provideTracksRepository()
 
+    companion object {
+        private const val WHILE_SUBSCRIBED_STOP_TIMEOUT_MILLIS = 5000L
+    }
+
     val playlists: StateFlow<List<Playlist>> = playlistsRepository
         .getAllPlaylists()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(WHILE_SUBSCRIBED_STOP_TIMEOUT_MILLIS),
             initialValue = emptyList()
         )
 
@@ -28,7 +32,7 @@ class PlaylistsViewModel : ViewModel() {
         .getFavoriteTracks()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(WHILE_SUBSCRIBED_STOP_TIMEOUT_MILLIS),
             initialValue = emptyList()
         )
 
@@ -56,7 +60,6 @@ class PlaylistsViewModel : ViewModel() {
         return tracksRepository.getTrackByIdAsync(id)
     }
 
-    // Новые методы
     fun getPlaylist(playlistId: Long): Flow<Playlist?> {
         return playlistsRepository.getPlaylist(playlistId)
     }

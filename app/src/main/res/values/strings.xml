@@ -16,4 +16,24 @@
     <string name="support_body">Спасибо разработчикам и разработчицам за крутое приложение!</string>
     <string name="share_link">https://practicum.yandex.ru/android-developer/</string>
     <string name="agreement_link">https://yandex.ru/legal/practicum_offer/</string>
+    <string name="new_playlist">Новый плейлист</string>
+    <string name="name">Название</string>
+    <string name="description">Описание</string>
+    <string name="create">Создать</string>
+    <string name="edit">Редактировать</string>
+    <string name="save">Сохранить</string>
+    <string name="add_tracks">Добавить треки</string>
+    <string name="back">Назад</string>
+    <string name="empty_favorites">Ваша медиатека пуста</string>
+    <string name="empty_playlists">Ваша медиатека пуста</string>
+    <string name="nothing_found">Ничего не найдено</string>
+    <string name="connection_error">Проблемы со связью\nЗагрузка не удалась. Проверьте подключение к интернету</string>
+    <string name="retry">Обновить</string>
+    <string name="clear_history">Очистить историю</string>
+    <string name="you_searched">Вы искали</string>
+    <string name="add_to_playlist">Добавить в плейлист</string>
+    <string name="no_playlists">Нет плейлистов</string>
+    <string name="duration">Длительность</string>
+    <string name="add_cover">Добавить обложку</string>
+    <string name="change_cover">Изменить обложку</string>
 </resources>

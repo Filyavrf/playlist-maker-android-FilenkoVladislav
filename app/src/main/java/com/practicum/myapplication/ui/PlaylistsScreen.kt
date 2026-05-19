@@ -1,6 +1,5 @@
 package com.practicum.myapplication.ui
 
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -19,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,6 +27,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.practicum.myapplication.R
 import com.practicum.myapplication.domain.models.Playlist
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
+import java.io.File
 
 @Composable
 fun PlaylistsScreen(
@@ -46,9 +47,9 @@ fun PlaylistsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = Color.Black)
                 }
-                Text("Плейлисты", fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+                Text(stringResource(R.string.playlists), fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
             }
         },
         floatingActionButton = {
@@ -59,14 +60,14 @@ fun PlaylistsScreen(
                 shape = CircleShape,
                 modifier = Modifier.padding(bottom = 16.dp, end = 8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Добавить", modifier = Modifier.size(32.dp))
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_tracks), modifier = Modifier.size(32.dp))
             }
         }
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
             if (playlists.isEmpty()) {
                 Text(
-                    text = "Ваша медиатека пуста",
+                    text = stringResource(R.string.empty_playlists),
                     color = Color.Gray,
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,
@@ -94,7 +95,7 @@ fun PlaylistListItem(playlist: Playlist, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         val painter = rememberAsyncImagePainter(
-            model = if (playlist.coverPath.isNotBlank()) Uri.parse(playlist.coverPath) else null,
+            model = if (playlist.coverPath.isNotBlank()) File(playlist.coverPath) else null,
             placeholder = painterResource(R.drawable.ic_music),
             error = painterResource(R.drawable.ic_music)
         )

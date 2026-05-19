@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun TrackDetailsScreen(
     Scaffold(
         topBar = {
             IconButton(onClick = onBackClick, modifier = Modifier.padding(top = 16.dp, start = 4.dp)) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
         }
     ) { paddingValues ->
@@ -84,7 +85,7 @@ fun TrackDetailsScreen(
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = { showBottomSheet = true }, modifier = Modifier.size(50.dp).background(Color(0xFFE6E6E6), CircleShape)) {
-                    Icon(Icons.Default.Add, contentDescription = "В плейлист", tint = Color.Gray)
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_to_playlist), tint = Color.Gray)
                 }
                 IconButton(
                     onClick = {
@@ -103,17 +104,17 @@ fun TrackDetailsScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Длительность", color = Color.Gray, fontSize = 14.sp)
-                Text(currentTrack.trackTime, color = Color.Black, fontSize = 14.sp)
+                Text(stringResource(R.string.duration), color = Color.Gray, fontSize = 14.sp)
+                Text(currentTrack.formattedDuration, color = Color.Black, fontSize = 14.sp)
             }
         }
 
         if (showBottomSheet) {
             ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, containerColor = Color.White) {
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp)) {
-                    Text("Добавить в плейлист", fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
+                    Text(stringResource(R.string.add_to_playlist), fontSize = 18.sp, fontWeight = FontWeight.Medium, modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center)
                     if (playlists.isEmpty()) {
-                        Text("Нет плейлистов", modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center, color = Color.Gray)
+                        Text(stringResource(R.string.no_playlists), modifier = Modifier.fillMaxWidth().padding(16.dp), textAlign = TextAlign.Center, color = Color.Gray)
                     } else {
                         LazyColumn {
                             items(playlists.size) { index ->

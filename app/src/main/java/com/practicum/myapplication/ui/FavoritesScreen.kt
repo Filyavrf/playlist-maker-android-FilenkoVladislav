@@ -1,5 +1,6 @@
 package com.practicum.myapplication.ui
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -29,6 +31,7 @@ import com.practicum.myapplication.R
 import com.practicum.myapplication.domain.models.Track
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FavoritesScreen(
     viewModel: PlaylistsViewModel,
@@ -43,14 +46,14 @@ fun FavoritesScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад", tint = Color.Black)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = Color.Black)
             }
-            Text("Избранные треки", fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+            Text(stringResource(R.string.favorites), fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
         }
 
         if (favorites.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Ваша медиатека пуста", color = Color.Gray, fontSize = 18.sp)
+                Text(stringResource(R.string.empty_favorites), color = Color.Gray, fontSize = 18.sp)
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -71,6 +74,7 @@ fun FavoritesScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FavoriteTrackItem(track: Track, onClick: () -> Unit, onLongClick: () -> Unit) {
     Row(
@@ -114,7 +118,7 @@ fun FavoriteTrackItem(track: Track, onClick: () -> Unit, onLongClick: () -> Unit
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = " • ${track.trackTime}",
+                    text = " • ${track.formattedDuration}",
                     fontSize = 11.sp,
                     color = Color.Gray
                 )

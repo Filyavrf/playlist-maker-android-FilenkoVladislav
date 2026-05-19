@@ -1,10 +1,12 @@
-package com.practicum.myapplication.ui.screens
+package com.practicum.myapplication.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Info
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -49,16 +52,16 @@ fun SearchScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.Clear, contentDescription = "Назад")
+                Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.back))
             }
-            Text("Поиск", fontSize = 22.sp, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.search), fontSize = 22.sp, modifier = Modifier.padding(16.dp), style = MaterialTheme.typography.titleLarge)
         }
 
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-            placeholder = { Text("Поиск") },
+            placeholder = { Text(stringResource(R.string.search)) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
             trailingIcon = {
                 if (searchText.isNotEmpty()) {
@@ -67,7 +70,7 @@ fun SearchScreen(
                         viewModel.search("")
                         keyboardController?.hide()
                     }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Очистить")
+                        Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.clear_history))
                     }
                 }
             },
@@ -79,8 +82,8 @@ fun SearchScreen(
                 focusedBorderColor = Color.Transparent,
                 unfocusedBorderColor = Color.Transparent
             ),
-            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(
                 onSearch = {
                     if (searchText.isNotEmpty()) {
                         viewModel.search(searchText)
@@ -116,12 +119,12 @@ fun SearchScreen(
                     )
                 }
                 is SearchState.Empty -> {
-                    Placeholder(icon = Icons.Default.Info, text = "Ничего не найдено")
+                    Placeholder(icon = Icons.Default.Info, text = stringResource(R.string.nothing_found))
                 }
                 is SearchState.Error -> {
                     Placeholder(
                         icon = Icons.Default.Warning,
-                        text = "Проблемы со связью\n\nЗагрузка не удалась. Проверьте подключение к интернету",
+                        text = stringResource(R.string.connection_error),
                         showRetry = true,
                         onRetry = { viewModel.retryLastSearch() }
                     )
@@ -135,7 +138,7 @@ fun SearchScreen(
 fun HistorySection(history: List<String>, onHistoryItemClick: (String) -> Unit, onClearHistory: () -> Unit) {
     if (history.isEmpty()) return
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Вы искали", modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium, color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(stringResource(R.string.you_searched), modifier = Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 12.dp), style = MaterialTheme.typography.titleMedium, color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(history) { query ->
                 Row(
@@ -148,14 +151,16 @@ fun HistorySection(history: List<String>, onHistoryItemClick: (String) -> Unit, 
                 }
             }
         }
-        Button(onClick = onClearHistory, modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) { Text("Очистить историю") }
+        Button(onClick = onClearHistory, modifier = Modifier.align(Alignment.CenterHorizontally).padding(16.dp)) { Text(stringResource(R.string.clear_history)) }
     }
 }
 
 @Composable
 fun TrackList(tracks: List<Track>, onTrackClick: (Track) -> Unit) {
     LazyColumn {
-        items(tracks) { track -> TrackItem(track = track, onClick = { onTrackClick(track) }) }
+        items(tracks) { track ->
+            TrackItem(track = track, onClick = { onTrackClick(track) })
+        }
     }
 }
 
@@ -178,7 +183,7 @@ fun TrackItem(track: Track, onClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = track.artistName, fontSize = 11.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                 Text(text = " • ", fontSize = 11.sp, color = Color.Gray)
-                Text(text = track.trackTime, fontSize = 11.sp, color = Color.Gray)
+                Text(text = track.formattedDuration, fontSize = 11.sp, color = Color.Gray)
             }
         }
         Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
@@ -193,7 +198,7 @@ fun Placeholder(icon: ImageVector, text: String, showRetry: Boolean = false, onR
         Text(text = text, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.bodyLarge)
         if (showRetry) {
             Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onRetry) { Text("Обновить") }
+            Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
         }
     }
 }

@@ -1,8 +1,9 @@
-package com.practicum.myapplication.ui.screens
+package com.practicum.myapplication.ui
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -24,6 +25,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,9 +35,11 @@ import coil.compose.AsyncImage
 import com.practicum.myapplication.R
 import com.practicum.myapplication.domain.models.Track
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
+import com.practicum.myapplication.utils.ImageFileHelper
 import kotlinx.coroutines.launch
+import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EditPlaylistScreen(
     playlistId: Long,
@@ -46,25 +51,26 @@ fun EditPlaylistScreen(
     var isEditing by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf("") }
     var editedDescription by remember { mutableStateOf("") }
-    var coverUri by remember { mutableStateOf<Uri?>(null) }
+    var coverPath by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        coverUri = uri
+        uri?.let {
+            scope.launch {
+                val savedPath = ImageFileHelper.copyImageToPrivateStorage(context, it)
+                savedPath?.let { coverPath = it }
+            }
+        }
     }
 
     LaunchedEffect(playlist) {
         playlist?.let {
             editedName = it.name
             editedDescription = it.description
-            if (it.coverPath.isNotBlank()) {
-                coverUri = Uri.parse(it.coverPath)
-            } else {
-                coverUri = null
-            }
+            coverPath = it.coverPath.takeIf { it.isNotBlank() }
         }
     }
 
@@ -80,16 +86,16 @@ fun EditPlaylistScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isEditing) "Редактирование" else currentPlaylist.name) },
+                title = { Text(if (isEditing) stringResource(R.string.edit) else currentPlaylist.name) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     if (!isEditing) {
                         IconButton(onClick = { isEditing = true }) {
-                            Icon(Icons.Default.Edit, contentDescription = "Редактировать")
+                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit))
                         }
                     }
                 }
@@ -116,9 +122,9 @@ fun EditPlaylistScreen(
                 contentAlignment = Alignment.Center
             ) {
                 when {
-                    coverUri != null -> {
+                    coverPath != null -> {
                         AsyncImage(
-                            model = coverUri,
+                            model = File(coverPath!!),
                             contentDescription = "Cover",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -126,7 +132,7 @@ fun EditPlaylistScreen(
                     }
                     currentPlaylist.coverPath.isNotBlank() -> {
                         AsyncImage(
-                            model = Uri.parse(currentPlaylist.coverPath),
+                            model = File(currentPlaylist.coverPath),
                             contentDescription = "Cover",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -135,7 +141,7 @@ fun EditPlaylistScreen(
                     else -> {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_music),
-                            contentDescription = "Add cover",
+                            contentDescription = stringResource(R.string.add_cover),
                             modifier = Modifier.size(64.dp),
                             tint = Color.Gray
                         )
@@ -150,7 +156,7 @@ fun EditPlaylistScreen(
                         content = {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Change cover",
+                                contentDescription = stringResource(R.string.change_cover),
                                 tint = Color.White,
                                 modifier = Modifier.padding(8.dp)
                             )
@@ -165,7 +171,7 @@ fun EditPlaylistScreen(
                 OutlinedTextField(
                     value = editedName,
                     onValueChange = { editedName = it },
-                    label = { Text("Название") },
+                    label = { Text(stringResource(R.string.name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -173,7 +179,7 @@ fun EditPlaylistScreen(
                 OutlinedTextField(
                     value = editedDescription,
                     onValueChange = { editedDescription = it },
-                    label = { Text("Описание") },
+                    label = { Text(stringResource(R.string.description)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
@@ -183,7 +189,7 @@ fun EditPlaylistScreen(
                             val updatedPlaylist = currentPlaylist.copy(
                                 name = editedName,
                                 description = editedDescription,
-                                coverPath = coverUri?.toString() ?: currentPlaylist.coverPath
+                                coverPath = coverPath ?: currentPlaylist.coverPath
                             )
                             viewModel.updatePlaylist(updatedPlaylist)
                             isEditing = false
@@ -192,7 +198,7 @@ fun EditPlaylistScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = editedName.isNotBlank()
                 ) {
-                    Text("Сохранить")
+                    Text(stringResource(R.string.save))
                 }
             } else {
                 Text(
@@ -217,14 +223,12 @@ fun EditPlaylistScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Добавить треки")
+                Text(stringResource(R.string.add_tracks))
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            LazyColumn {
                 items(currentPlaylist.tracks) { track ->
                     TrackInPlaylistItem(
                         track = track,
@@ -240,6 +244,7 @@ fun EditPlaylistScreen(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackInPlaylistItem(track: Track, onLongClick: () -> Unit) {
     Row(
@@ -280,7 +285,7 @@ fun TrackInPlaylistItem(track: Track, onLongClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = " • ${track.trackTime}",
+                    text = " • ${track.formattedDuration}",
                     fontSize = 11.sp,
                     color = Color.Gray
                 )
@@ -288,8 +293,6 @@ fun TrackInPlaylistItem(track: Track, onLongClick: () -> Unit) {
         }
     }
 }
-
-
 
 private fun formatDuration(millis: Long): String {
     val minutes = (millis / 1000) / 60

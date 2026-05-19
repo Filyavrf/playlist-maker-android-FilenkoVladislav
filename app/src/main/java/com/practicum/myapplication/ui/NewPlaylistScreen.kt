@@ -16,26 +16,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.practicum.myapplication.R
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
+import com.practicum.myapplication.utils.ImageFileHelper
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var coverUri by remember { mutableStateOf<Uri?>(null) }
+    var coverPath by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        coverUri = uri
+        uri?.let {
+            scope.launch {
+                val savedPath = ImageFileHelper.copyImageToPrivateStorage(context, it)
+                coverPath = savedPath
+            }
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
@@ -44,9 +54,9 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onBackClick) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
-            Text("Новый плейлист", fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
+            Text(stringResource(R.string.new_playlist), fontSize = 22.sp, fontWeight = FontWeight.Medium, color = Color.Black)
         }
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Box(
@@ -57,9 +67,9 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
                     .clickable { imagePickerLauncher.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                if (coverUri != null) {
+                if (coverPath != null) {
                     AsyncImage(
-                        model = coverUri,
+                        model = File(coverPath!!),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -67,7 +77,7 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
                 } else {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_music),
-                        contentDescription = "Add cover",
+                        contentDescription = stringResource(R.string.add_cover),
                         modifier = Modifier.size(48.dp),
                         tint = Color.Gray
                     )
@@ -77,7 +87,7 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Название*") },
+                label = { Text(stringResource(R.string.name) + "*") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -85,14 +95,14 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Описание") },
+                label = { Text(stringResource(R.string.description)) },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 onClick = {
                     scope.launch {
-                        viewModel.addPlaylist(name, description, coverUri?.toString() ?: "")
+                        viewModel.addPlaylist(name, description, coverPath ?: "")
                         onBackClick()
                     }
                 },
@@ -100,7 +110,7 @@ fun NewPlaylistScreen(viewModel: PlaylistsViewModel, onBackClick: () -> Unit) {
                 enabled = name.isNotBlank(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3772E7))
             ) {
-                Text("Создать", color = Color.White, fontSize = 16.sp)
+                Text(stringResource(R.string.create), color = Color.White, fontSize = 16.sp)
             }
         }
     }
