@@ -45,15 +45,12 @@ class SearchViewModel(
             return
         }
         lastQuery = whatSearch
-        // Сохраняем запрос в историю (асинхронно, не ждём)
         if (saveToHistory) {
             viewModelScope.launch(Dispatchers.IO) {
                 Creator.searchHistoryPreferences.addEntry(whatSearch)
-                // Не вызываем loadHistory() здесь, чтобы не мешать показу загрузки
             }
         }
 
-        // Сразу переключаем состояние на Searching
         _searchScreenState.update { SearchState.Searching }
 
         viewModelScope.launch(Dispatchers.IO) {

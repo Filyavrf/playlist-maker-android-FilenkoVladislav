@@ -7,8 +7,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.practicum.myapplication.ui.EditPlaylistScreen
-import com.practicum.myapplication.ui.SearchScreen
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 import com.practicum.myapplication.ui.view_model.SearchViewModel
 
