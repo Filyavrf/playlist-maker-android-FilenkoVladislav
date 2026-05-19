@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -40,4 +41,10 @@ interface AppDao {
 
     @Query("DELETE FROM playlist_table WHERE id = :id")
     suspend fun deletePlaylistById(id: Long)
+
+    @Update
+    suspend fun updatePlaylist(playlist: PlaylistEntity)
+
+    @Query("UPDATE track_table SET playlistId = 0 WHERE id = :trackId")
+    suspend fun removeTrackFromPlaylist(trackId: Long)
 }

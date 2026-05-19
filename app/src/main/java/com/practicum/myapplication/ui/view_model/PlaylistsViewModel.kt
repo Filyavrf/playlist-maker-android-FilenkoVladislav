@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.practicum.myapplication.creator.Creator
 import com.practicum.myapplication.domain.models.Playlist
 import com.practicum.myapplication.domain.models.Track
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -35,8 +36,8 @@ class PlaylistsViewModel : ViewModel() {
         viewModelScope.launch { playlistsRepository.deletePlaylistById(playlist.id) }
     }
 
-    fun addPlaylist(name: String, description: String) {
-        viewModelScope.launch { playlistsRepository.addNewPlaylist(name, description) }
+    fun addPlaylist(name: String, description: String, coverPath: String = "") {
+        viewModelScope.launch { playlistsRepository.addNewPlaylist(name, description, coverPath) }
     }
 
     fun saveTrack(track: Track) {
@@ -53,5 +54,22 @@ class PlaylistsViewModel : ViewModel() {
 
     suspend fun getTrackByIdAsync(id: Long): Track? {
         return tracksRepository.getTrackByIdAsync(id)
+    }
+
+    // Новые методы
+    fun getPlaylist(playlistId: Long): Flow<Playlist?> {
+        return playlistsRepository.getPlaylist(playlistId)
+    }
+
+    fun updatePlaylist(playlist: Playlist) {
+        viewModelScope.launch {
+            playlistsRepository.updatePlaylist(playlist)
+        }
+    }
+
+    fun removeTrackFromPlaylist(trackId: Long) {
+        viewModelScope.launch {
+            tracksRepository.removeTrackFromPlaylist(trackId)
+        }
     }
 }

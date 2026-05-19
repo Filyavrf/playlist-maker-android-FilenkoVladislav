@@ -3,7 +3,6 @@ package com.practicum.myapplication.data.network
 import android.util.Log
 import com.practicum.myapplication.data.dto.BaseResponse
 import com.practicum.myapplication.data.dto.TracksSearchRequest
-import com.practicum.myapplication.data.dto.TracksSearchResponse
 import com.practicum.myapplication.domain.NetworkClient
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

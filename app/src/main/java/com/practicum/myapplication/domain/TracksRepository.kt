@@ -1,7 +1,6 @@
 package com.practicum.myapplication.domain
 
 import com.practicum.myapplication.domain.models.Track
-
 import kotlinx.coroutines.flow.Flow
 
 interface TracksRepository {
@@ -14,6 +13,6 @@ interface TracksRepository {
     suspend fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean)
     fun deleteTracksByPlaylistId(playlistId: Long)
     fun getTrackById(id: Long): Track?
-
     suspend fun getTrackByIdAsync(id: Long): Track?
+    suspend fun removeTrackFromPlaylist(trackId: Long)
 }

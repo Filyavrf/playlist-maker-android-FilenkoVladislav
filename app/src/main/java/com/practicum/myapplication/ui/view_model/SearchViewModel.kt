@@ -39,15 +39,17 @@ class SearchViewModel(
         }
     }
 
-    fun search(whatSearch: String) {
+    fun search(whatSearch: String, saveToHistory: Boolean = true) {
         if (whatSearch.isEmpty()) {
             loadHistory()
             return
         }
         lastQuery = whatSearch
-        viewModelScope.launch(Dispatchers.IO) {
-            Creator.searchHistoryPreferences.addEntry(whatSearch)
-            loadHistory()
+        if (saveToHistory) {
+            viewModelScope.launch(Dispatchers.IO) {
+                Creator.searchHistoryPreferences.addEntry(whatSearch)
+                loadHistory()
+            }
         }
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -81,6 +83,12 @@ class SearchViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             Creator.searchHistoryPreferences.clearHistory()
             loadHistory()
+        }
+    }
+
+    fun addTrackToPlaylist(track: Track, playlistId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            tracksRepository.insertTrackToPlaylist(track, playlistId)
         }
     }
 

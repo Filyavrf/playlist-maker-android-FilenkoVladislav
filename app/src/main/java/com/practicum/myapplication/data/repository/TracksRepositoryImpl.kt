@@ -86,4 +86,8 @@ class TracksRepositoryImpl(
 
     private fun Track.toEntity() = TrackEntity(id, trackName, artistName, trackTime, trackTimeMillis, artworkUrl100, favorite, playlistId)
     private fun TrackEntity.toDomain() = Track(id, trackName, artistName, trackTime, trackTimeMillis, artworkUrl100, isFavorite, playlistId)
+
+    override suspend fun removeTrackFromPlaylist(trackId: Long) {
+        appDao.removeTrackFromPlaylist(trackId)
+    }
 }

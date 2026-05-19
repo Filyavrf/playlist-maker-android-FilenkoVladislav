@@ -3,14 +3,17 @@ package com.practicum.myapplication.ui
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.practicum.myapplication.ui.screens.EditPlaylistScreen
+import com.practicum.myapplication.ui.screens.SearchScreen
 import com.practicum.myapplication.ui.view_model.PlaylistsViewModel
 import com.practicum.myapplication.ui.view_model.SearchViewModel
-import com.practicum.myapplication.ui.screens.SearchScreen
 
 enum class AppScreen {
-    Main, Search, Playlists, Favorites, Settings, NewPlaylist, TrackDetails
+    Main, Search, Playlists, Favorites, Settings, NewPlaylist, TrackDetails, EditPlaylist, SearchForPlaylist
 }
 
 @Composable
@@ -45,7 +48,10 @@ fun PlaylistHost(navController: NavHostController) {
             PlaylistsScreen(
                 playlistsViewModel = playlistsViewModel,
                 onBackClick = { navController.popBackStack() },
-                onAddNewPlaylistClick = { navController.navigate(AppScreen.NewPlaylist.name) }
+                onAddNewPlaylistClick = { navController.navigate(AppScreen.NewPlaylist.name) },
+                onPlaylistClick = { playlistId ->
+                    navController.navigate("${AppScreen.EditPlaylist.name}/$playlistId")
+                }
             )
         }
 
@@ -63,6 +69,35 @@ fun PlaylistHost(navController: NavHostController) {
                 onTrackClick = { trackId ->
                     navController.navigate("${AppScreen.TrackDetails.name}/$trackId")
                 }
+            )
+        }
+
+        composable(
+            route = "${AppScreen.EditPlaylist.name}/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getLong("playlistId") ?: 0L
+            EditPlaylistScreen(
+                playlistId = playlistId,
+                viewModel = playlistsViewModel,
+                onBackClick = { navController.popBackStack() },
+                onNavigateToSearch = {
+                    navController.navigate("${AppScreen.SearchForPlaylist.name}/$playlistId")
+                }
+            )
+        }
+
+        composable(
+            route = "${AppScreen.SearchForPlaylist.name}/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getLong("playlistId") ?: 0L
+            val searchViewModel: SearchViewModel = viewModel(factory = SearchViewModel.getViewModelFactory())
+            SearchForPlaylistScreen(
+                playlistId = playlistId,
+                viewModel = searchViewModel,
+                onBackClick = { navController.popBackStack() },
+                onTrackAdded = { navController.popBackStack() }
             )
         }
 

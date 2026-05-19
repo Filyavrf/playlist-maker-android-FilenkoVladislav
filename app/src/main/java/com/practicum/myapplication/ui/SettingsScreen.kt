@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Share
@@ -21,20 +22,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.practicum.myapplication.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBackClick: () -> Boolean) {
+fun SettingsScreen(onBackClick: () -> Unit) {
     val context = LocalContext.current
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
-        Box(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text(
-                text = stringResource(R.string.settings),
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color.Black
-            )
-        }
+        TopAppBar(
+            title = { Text(stringResource(R.string.settings)) },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
+
         SettingItem(
             text = stringResource(R.string.share_app),
             icon = Icons.Default.Share,

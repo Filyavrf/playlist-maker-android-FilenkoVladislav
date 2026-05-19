@@ -17,6 +17,7 @@ class PlaylistsRepositoryImpl(private val appDao: AppDao) : PlaylistsRepository 
                     id = item.playlist.id,
                     name = item.playlist.name,
                     description = item.playlist.description,
+                    coverPath = item.playlist.coverPath,
                     tracks = item.tracks.map { entity ->
                         Track(entity.id, entity.trackName, entity.artistName, entity.trackTime, entity.trackTimeMillis, entity.artworkUrl100, entity.isFavorite, entity.playlistId)
                     }
@@ -32,6 +33,7 @@ class PlaylistsRepositoryImpl(private val appDao: AppDao) : PlaylistsRepository 
                     id = it.playlist.id,
                     name = it.playlist.name,
                     description = it.playlist.description,
+                    coverPath = it.playlist.coverPath,
                     tracks = it.tracks.map { entity ->
                         Track(entity.id, entity.trackName, entity.artistName, entity.trackTime, entity.trackTimeMillis, entity.artworkUrl100, entity.isFavorite, entity.playlistId)
                     }
@@ -40,8 +42,12 @@ class PlaylistsRepositoryImpl(private val appDao: AppDao) : PlaylistsRepository 
         }
     }
 
-    override suspend fun addNewPlaylist(name: String, description: String) {
-        appDao.insertPlaylist(PlaylistEntity(name = name, description = description))
+    override suspend fun addNewPlaylist(name: String, description: String, coverPath: String) {
+        appDao.insertPlaylist(PlaylistEntity(name = name, description = description, coverPath = coverPath))
+    }
+
+    override suspend fun updatePlaylist(playlist: Playlist) {
+        appDao.updatePlaylist(PlaylistEntity(playlist.id, playlist.name, playlist.description, playlist.coverPath))
     }
 
     override suspend fun deletePlaylistById(id: Long) {
